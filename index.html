@@ -1,0 +1,47 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+    <head>
+            <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+            <title></title>
+    <script type="text/javascript">
+    	
+	window.onload=function(){
+		try {
+  			var audioCtx = new (window.AudioContext ||window.webkitAudioContext)();
+		} catch (err) {
+  			alert('!Your browser does not support Web Audio API!');
+		};
+    	var audioInput = document.getElementById("select"); 
+    	var myArrayBuffer;
+		audioInput.onchange = function() {
+　　			//文件长度不为0则真的选中了文件，因为用户点击取消也会触发onchange事件。
+	　　		if (audioInput.files.length !== 0) {
+	　　　　		var files = audioInput.files[0]; //得到用户选取的文件
+				//文件选定之后，马上用FileReader进行读入
+	　　　　		fr = new FileReader();
+				fr.readAsArrayBuffer(files); //同样的，ArrayBuffer方式读取
+				fr.onload = function(e) {
+		　　　　　　	//文件读入完成，进行解码
+					var source = audioCtx.createBufferSource();
+					audioCtx.decodeAudioData(e.target.result,function(buffer){
+						source.buffer=buffer;
+						myArrayBuffer=audioCtx.createBuffer(buffer.numberOfChannels,buffer.length,audioCtx.sampleRate);
+						for (var i=0;i<buffer.numberOfChannels;i++) {
+							var nowProcessing=myArrayBuffer.getChannelData(i);
+							nowProcessing.set(buffer.getChannelData(i));
+							console.log(nowProcessing);
+						}
+					});
+		　　　　	};
+			　　fr.onerror = function(err) {
+			　　　　alert('!Fail to read the file');    //文件读入出错
+			　　};
+	　　		}
+		};
+	}
+    </script>
+            
+    </head>
+    <body>
+           <input type="file" id="select"/>
+    </body>
+    </html>
